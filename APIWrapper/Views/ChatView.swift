@@ -78,7 +78,9 @@ struct ChatView: View {
                         HStack {
                             Spacer()
                             Button {
-                                scrollView.scrollTo(chat.messages.first?.id)
+                                withAnimation {
+                                    scrollView.scrollTo(chat.messages.first?.id)
+                                }
                             } label: {
                                 Image(systemName: "arrow.up.circle.fill")
                             }
@@ -89,10 +91,14 @@ struct ChatView: View {
                         }
                     }
                     .onChange(of: chat.messages) {
-                        scrollView.scrollTo("bottom")
+                        withAnimation {
+                            scrollView.scrollTo("bottom")
+                        }
                     }
                     .onChange(of: isLoading) {
-                        scrollView.scrollTo("bottom")
+                        withAnimation {
+                            scrollView.scrollTo("bottom")
+                        }
                     }
                     .background(
                         RoundedRectangle(cornerRadius: 10)
@@ -139,14 +145,16 @@ struct ChatView: View {
         }
         
         let newMessage = Message(role: MessageRole.user, content: message)
-        message = ""
         withAnimation{
+            message = ""
             chat.messages.append(newMessage)
             chat.messages.append(Message(role: MessageRole.assistant, content: "Thinking... "))
         }
         
         Task(priority: .userInitiated) {
-            isLoading = true
+            withAnimation {
+                isLoading.toggle()
+            }
             let newMessage = Message(role: MessageRole.assistant, content: "")
             chat.messages.removeLast()
             chat.messages.append(newMessage)
@@ -160,7 +168,9 @@ struct ChatView: View {
             } catch {
                 print(error)
             }
-            isLoading = false
+            withAnimation {
+                isLoading.toggle()
+            }
             ChatList.shared.save()
         }
     }
