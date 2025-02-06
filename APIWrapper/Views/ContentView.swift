@@ -15,13 +15,32 @@ struct ContentView: View {
     
     var body: some View {
         NavigationSplitView {
-            List(selection: $selection) {
-                ForEach(chatList.chats) { chat in
-                    NavigationLink(value: chat.id) {
-                        Text(chat.title)
+            VStack(alignment: .leading) {
+                Text("Chats")
+                    .font(.title)
+                    .bold()
+                    .padding()
+                    .toolbar {
+                        Button {
+                            chatList.newChat()
+                            selection = chatList.chats.first?.id
+                        } label: {
+                            Image(systemName: "plus")
+                        }
+                        Button {
+                            settingsShown.toggle()
+                        } label: {
+                            Image(systemName: "gear")
+                        }
                     }
+                List(selection: $selection) {
+                    ForEach(chatList.chats) { chat in
+                        NavigationLink(value: chat.id) {
+                            Text(chat.title)
+                        }
+                    }
+                    .id(chatList.needsUpdate)
                 }
-                .id(chatList.needsUpdate)
             }
         } detail: {
             ZStack {
@@ -39,23 +58,12 @@ struct ContentView: View {
             .toolbar {
                 ToolbarItemGroup(placement: .automatic) {
                     Button {
-                        chatList.newChat()
-                        selection = chatList.chats.first?.id
-                    } label: {
-                        Image(systemName: "plus")
-                    }
-                    Button {
                         if let selection {
                             chatList.chats.removeAll(where: { $0.id == selection })
                         }
                         selection = chatList.chats.first?.id ?? nil
                     } label: {
                         Image(systemName: "trash")
-                    }
-                    Button {
-                        settingsShown.toggle()
-                    } label: {
-                        Image(systemName: "gear")
                     }
                 }
             }

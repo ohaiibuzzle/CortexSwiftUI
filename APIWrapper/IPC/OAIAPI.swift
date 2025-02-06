@@ -13,12 +13,6 @@ class OpenAIAPI {
     
     private let settings = ServerSettings.shared
 
-    func getModels() async throws -> ModelsResponse {
-        let url = URL(string: settings.apiBaseUrl + "/models")!
-        let (data, _) = try await URLSession.shared.data(from: url)
-        return try JSONDecoder().decode(ModelsResponse.self, from: data)
-    }
-
     func getChatCompletion(messages: [Message]) async throws -> ChatCompletionResponse {
         let url = URL(string: settings.apiBaseUrl + "/chat/completions")!
         var request = URLRequest(url: url)
@@ -30,7 +24,8 @@ class OpenAIAPI {
             "messages": messages.map { [
                 "role": $0.role.rawValue,
                 "content": $0.content
-            ] }
+            ] },
+            "model": settings.model
         ]
 
         let jsonData = try JSONSerialization.data(withJSONObject: body)
@@ -52,7 +47,8 @@ class OpenAIAPI {
                 "role": $0.role.rawValue,
                 "content": $0.content
             ] },
-            "stream": true
+            "stream": true,
+            "model": settings.model
         ]
 
         let jsonData = try JSONSerialization.data(withJSONObject: body)
@@ -92,5 +88,11 @@ class OpenAIAPI {
                 continuation.finish()
             }
         }
+    }
+
+    func getModels() async throws -> ModelListResponse {
+        let url = URL(string: settings.apiBaseUrl + "/models")!
+        let (data, _) = try await URLSession.shared.data(from: url)
+        return try JSONDecoder().decode(ModelListResponse.self, from: data)
     }
 }

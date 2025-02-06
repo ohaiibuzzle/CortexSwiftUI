@@ -116,9 +116,15 @@ struct ChatView: View {
                     } else {
                         HStack {
                             TextField("Enter your message" ,text: $message)
-                                .onSubmit(sendMessage)
+                                .onSubmit {
+                                    Task.detached {
+                                        await sendMessage()
+                                    }
+                                }
                             Button {
-                                sendMessage()
+                                Task.detached {
+                                    await sendMessage()
+                                }
                             } label: {
                                 Image(systemName: "paperplane.fill")
                             }
@@ -134,7 +140,7 @@ struct ChatView: View {
         .background(Color.gray.opacity(0.1))
     }
     
-    private func sendMessage() {
+    private func sendMessage() async {
         if message.isEmpty {
             return
         }
@@ -142,6 +148,10 @@ struct ChatView: View {
         if chat.messages.isEmpty {
             chat.title = message
             titleChanged.toggle()
+        }
+
+        if !ServerSettings.shared.modelStarted {
+            try? await CortexAPI.shared.startModel()
         }
         
         let newMessage = Message(role: MessageRole.user, content: message)
@@ -163,7 +173,9 @@ struct ChatView: View {
                 let response = try await OpenAIAPI.shared.streamChatCompletion(messages: chat.messages)
                 // Response is a AsyncThrowingStream
                 for try await response in response {
-                    newMessage.content += response.choices.first?.delta.content ?? ""
+                    Task { @MainActor in
+                        newMessage.content += response.choices.first?.delta.content ?? ""
+                    }
                 }
             } catch {
                 print(error)

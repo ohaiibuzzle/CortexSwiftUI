@@ -8,11 +8,11 @@ import Foundation
 // MARK: - StreamingChatCompletionResponseElement
 struct StreamingChatCompletionResponse: Codable {
     let choices: [StreamingChoice]
-    let created: Int
-    let id: String
-    let model: String
-    let systemFingerprint: String
-    let object: String
+    let created: Int?
+    let id: String?
+    let model: String?
+    let systemFingerprint: String?
+    let object: String?
     let usage: StreamingUsage?
     let timings: StreamingTimings?
 
