@@ -13,5 +13,12 @@ struct APIWrapperApp: App {
         WindowGroup {
             ContentView()
         }
+#if os(macOS)
+        MenuBarExtra("API Wrapper", systemImage: "ellipsis.message") {
+            MenuBarView()
+                .padding()
+        }
+        .menuBarExtraStyle(.window)
+#endif
     }
 }

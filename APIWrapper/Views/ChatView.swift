@@ -49,12 +49,53 @@ struct MessageView: View {
     }
 }
 
+struct CompactMessageView: View {
+    @StateObject var message: Message
+    
+    var body: some View {
+        HStack {
+            if message.role == MessageRole.user {
+                Spacer()
+                VStack(alignment: .trailing) {
+                    HStack {
+                        Spacer()
+                        Text("You:")
+                            .bold()
+                    }
+                    HStack {
+                        Spacer()
+                        Text(message.content)
+                            .textSelection(.enabled)
+                    }
+                }
+                .padding()
+            } else {
+                VStack(alignment: .leading) {
+                    HStack {
+                        Text("Assistant:")
+                            .bold()
+                        Spacer()
+                    }
+                    HStack {
+                        Markdown(message.content)
+                            .textSelection(.enabled)
+                        Spacer()
+                    }
+                }
+                .padding()
+            }
+        }
+        .padding(.horizontal)
+    }
+}
+
 struct ChatView: View {
     @StateObject var chat: Chat
     @State private var message = ""
     @State private var isLoading = false
     
     @Binding var titleChanged: Bool
+    @State var heightReduced = false
     
     var body: some View {
         VStack {
@@ -68,12 +109,18 @@ struct ChatView: View {
                     ScrollView {
                         LazyVStack {
                         ForEach(chat.messages, id: \.id) { message in
-                            MessageView(message: message)
-                                .padding(.horizontal)
-                                .id(message.id)
-                            Divider()
+                            if heightReduced {
+                                CompactMessageView(message: message)
+                                    .padding(.horizontal)
+                                    .id(message.id)
+                                Divider()
+                            } else {
+                                MessageView(message: message)
+                                    .padding(.horizontal)
+                                    .id(message.id)
+                                Divider()
+                            }
                         }
-                        .padding(.top)
                         
                         HStack {
                             Spacer()
